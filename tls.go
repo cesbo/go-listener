@@ -20,14 +20,15 @@ type tlsListener struct {
 	lockCrt sync.RWMutex
 	crt     *tls.Certificate
 
-	quit chan struct{}
+	once    sync.Once
+	closeCh chan struct{}
 }
 
 func NewTlsListener(inner net.Listener, cert, key string) net.Listener {
 	t := &tlsListener{
-		cert: cert,
-		key:  key,
-		quit: make(chan struct{}),
+		cert:    cert,
+		key:     key,
+		closeCh: make(chan struct{}),
 	}
 
 	go t.watcher()
@@ -95,8 +96,9 @@ func (t *tlsListener) watcher() {
 
 	for {
 		select {
-		case <-t.quit:
+		case <-t.closeCh:
 			return
+
 		case event := <-watcher.Events:
 			currentPath, err := filepath.EvalSymlinks(certPath)
 			if err != nil {
@@ -116,6 +118,10 @@ func (t *tlsListener) watcher() {
 }
 
 func (t *tlsListener) Close() error {
-	close(t.quit)
-	return t.Listener.Close()
+	err := t.Listener.Close()
+	t.once.Do(func() {
+		close(t.closeCh)
+	})
+
+	return err
 }

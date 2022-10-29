@@ -1,5 +1,7 @@
 # go-listener
 
+[![Go Reference](https://pkg.go.dev/badge/github.com/cesbo/go-listener.svg)](https://pkg.go.dev/github.com/cesbo/go-listener)
+
 Collection of listeners for TCP server
 
 Features:
