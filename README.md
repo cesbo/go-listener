@@ -25,5 +25,5 @@ ln = listener.NewTlsListener(
     "/etc/dehydrated/certs/example.com/fullchain.pem",
     "/etc/dehydrated/certs/example.com/privkey.pem",
 )
-_ = s.Serve(ln)
+_ = http.Serve(ln, http.NotFoundHandler())
 ```
